@@ -83,15 +83,15 @@ export default function HomeScreen() {
           const parsedData = JSON.parse(storedData);
           setTimezoneList(parsedData);
         } else {
-          // 第一次打开App，使用默认数据
-          setTimezoneList(initialMockData);
-          // 保存默认数据到本地
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(initialMockData));
+          // 第一次打开App，使用空数组
+          setTimezoneList([]);
+          // 保存空数组到本地
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([]));
         }
       } catch (error) {
         console.error('加载数据失败:', error);
-        // 出错时使用默认数据
-        setTimezoneList(initialMockData);
+        // 出错时使用空数组
+        setTimezoneList([]);
       } finally {
         setIsLoading(false);
       }
