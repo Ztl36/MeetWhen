@@ -4,15 +4,33 @@ import { Swipeable } from 'react-native-gesture-handler';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { useTranslation } from 'react-i18next';
 
 // 配置 dayjs 插件
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export default function TimeCard({ item, now, onDelete }) {
+export default function TimeCard({ item, now, onDelete, is24Hour = true, availableCities }) {
+  // 使用 i18n 钩子
+  const { t, i18n } = useTranslation();
+  
   // 计算当地时间 - 修复 Android 时区失效问题
   const localTime = dayjs(now).tz(item.timezone);
-  const formattedTime = localTime.format('HH:mm');
+  const formattedTime = is24Hour ? localTime.format('HH:mm') : localTime.format('hh:mm A');
+  
+  // 动态获取城市名
+  const getLocalizedCityName = () => {
+    if (availableCities) {
+      const city = availableCities.find(city => city.timezone === item.timezone);
+      if (city) {
+        return i18n.language === 'zh' ? city.name_zh : city.name_en;
+      }
+    }
+    // 降级显示原本保存的城市名
+    return item.city;
+  };
+  
+  const localizedCityName = getLocalizedCityName();
   
   // 判断昼夜状态（6点到18点为白天）
   const hour = localTime.hour();
@@ -82,7 +100,7 @@ export default function TimeCard({ item, now, onDelete }) {
         style={styles.deleteAction} 
         onPress={() => onDelete(item.id)}
       >
-        <Text style={styles.deleteText}>删除</Text>
+        <Text style={styles.deleteText}>{t('delete')}</Text>
       </TouchableOpacity>
     );
   };
@@ -94,7 +112,7 @@ export default function TimeCard({ item, now, onDelete }) {
           {renderAvatar()}
           <View style={styles.textContent}>
             <Text style={nameStyle}>{item.name}</Text>
-            <Text style={cityStyle}>{item.city} {item.flag}</Text>
+            <Text style={cityStyle}>{localizedCityName} {item.flag}</Text>
           </View>
         </View>
         <View style={styles.rightContent}>
